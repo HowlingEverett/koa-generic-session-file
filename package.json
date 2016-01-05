@@ -2,6 +2,9 @@
   "name": "koa-generic-session-file",
   "description": "Static file store for koa-generic-session",
   "version": "0.1.0",
+  "scripts": {
+    "test": "mocha test/*.js"
+  },
   "dependencies": {
     "debug": "^2.2.0",
     "es6-promisify": "^3.0.0",
@@ -9,5 +12,12 @@
   },
   "engines": {
     "node": ">4.0"
+  },
+  "devDependencies": {
+    "mocha": "^2.3.4",
+    "should": "^8.0.2",
+    "should-sinon": "0.0.3",
+    "sinon": "^1.17.2",
+    "sinon-as-promised": "^4.0.0"
   }
 }

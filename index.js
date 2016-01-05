@@ -5,7 +5,10 @@ let fs = require("fs");
 let EventEmitter = require("events");
 
 let promisify = require("es6-promisify");
-let glob = promisify(require("glob"));
+// glob.glob here is just exploiting a hidden property of glob to allow
+// me to stub this for testing. I know it's an old API compatibility
+// feature.
+let glob = promisify(require("glob").glob);
 let debug = require("debug")("koa-session-file-store");
 
 let readFile = promisify(fs.readFile);
@@ -16,7 +19,8 @@ let unlink = promisify(fs.unlink);
 
 class FileStore extends EventEmitter {
   constructor(options) {
-    this.emit('connect');
+    super();
+    this.emit("connect");
     this.options = options || {};
     this.options.sessionDirectory = path.resolve(
       this.options.sessionDirectory || "./sessions");
@@ -29,8 +33,10 @@ class FileStore extends EventEmitter {
    * @return {object} Parsed session object, or null if no session file exists
    */
   get(sid) {
-    let sessionGlob = path.join(this.options.sessionDirectory, `${sid}__*.json`);
+    let sessionGlob = path.join(this.options.sessionDirectory,
+      `${sid}__*.json`);
     let sessionPath;
+
     return glob(sessionGlob, {nonull: false}).then((err, files) => {
       if (files.length === 0) {
         debug("No session available for user");
@@ -39,7 +45,8 @@ class FileStore extends EventEmitter {
       sessionPath = files[0];
       return hasSessionExpired(sessionPath, this.options.sessionDirectory);
     }).then((err, sessionExpired) => {
-      let sessionFilePath = path.resolve(this.options.sessionDirectory, sessionPath);
+      let sessionFilePath = path.resolve(this.options.sessionDirectory,
+        sessionPath);
       if (sessionExpired) {
         debug("Session expired, removing session file");
         return unlink(sessionFilePath);
@@ -57,7 +64,6 @@ class FileStore extends EventEmitter {
 
   }
 
-
   set(sid, session, ttl) {
     let sessionFilePath = path.resolve(this.options.sessionDirectory,
       `${sid}__${ttl}.json`);
@@ -65,7 +71,8 @@ class FileStore extends EventEmitter {
   }
 
   destroy(sid) {
-    let sessionGlob = path.join(this.options.sessionDirectory, `${sid}__*.json`);
+    let sessionGlob = path.join(this.options.sessionDirectory,
+      `${sid}__*.json`);
     return glob(sessionGlob, {nonull: false}).then((err, files) => {
       if (files.length === 0) {
         return null;
@@ -75,15 +82,10 @@ class FileStore extends EventEmitter {
   }
 }
 
-/**
+/*
  * Will return true if the number of milliseconds between the current time and
  * the last modified time of the session file is greater than the TTL value
  * kludgily stored in the session's filename.
- * @param {string} sessionPath relative filename to the session, which should
- *                             be in the format `**<sid>**__**<ttl>**.json`
- * @param {string} sessionsDirectory location of the session files
- * @return {Promise<boolean>} Promise resolving to whether the session has
- *                            expired yet
  */
 function hasSessionExpired(sessionPath, sessionsDirectory) {
   let ttl = parseInt(path.basename(sessionPath).split("__")[1]);
@@ -92,7 +94,7 @@ function hasSessionExpired(sessionPath, sessionsDirectory) {
       if (err) {
         return true;
       }
-      return Date.now().getTime() - stats.mtime > ttl;
+      return Date.now() - stats.mtime > ttl;
     });
 }
 

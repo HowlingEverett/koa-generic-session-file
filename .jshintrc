@@ -22,6 +22,7 @@
   "node": true,
   "browser": true,
   "esnext": true,
+  "mocha": true,
   "globals": {
     "$": false,
     "jQuery": false
