@@ -1,7 +1,7 @@
 {
   "name": "koa-generic-session-file",
   "description": "Static file store for koa-generic-session",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "scripts": {
     "test": "mocha test/*.js"
   },

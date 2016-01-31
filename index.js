@@ -37,7 +37,7 @@ class FileStore extends EventEmitter {
       `${sid}__*.json`);
     let sessionPath;
 
-    return glob(sessionGlob, {nonull: false}).then((err, files) => {
+    return glob(sessionGlob, {nonull: false}).then(files => {
       if (files.length === 0) {
         debug("No session available for user");
         return null;
@@ -52,7 +52,7 @@ class FileStore extends EventEmitter {
         return unlink(sessionFilePath);
       }
       return readFile(sessionFilePath, "utf8");
-    }).then((err, content) => {
+    }).then(content => {
       try {
         return JSON.parse(content);
       } catch (err) {
@@ -61,7 +61,6 @@ class FileStore extends EventEmitter {
         return null;
       }
     });
-
   }
 
   set(sid, session, ttl) {
@@ -90,11 +89,10 @@ class FileStore extends EventEmitter {
 function hasSessionExpired(sessionPath, sessionsDirectory) {
   let ttl = parseInt(path.basename(sessionPath).split("__")[1]);
   return stat(path.resolve(sessionsDirectory, sessionPath))
-    .then((err, stats) => {
-      if (err) {
-        return true;
-      }
+    .then(stats => {
       return Date.now() - stats.mtime > ttl;
+    }).catch(() => {
+      return true;
     });
 }
 
