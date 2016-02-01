@@ -40,11 +40,14 @@ class FileStore extends EventEmitter {
     return glob(sessionGlob, {nonull: false}).then(files => {
       if (files.length === 0) {
         debug("No session available for user");
-        return null;
+        return true;
       }
       sessionPath = files[0];
       return hasSessionExpired(sessionPath, this.options.sessionDirectory);
-    }).then((err, sessionExpired) => {
+    }).then(sessionExpired => {
+      if (!sessionPath) {
+        return null;
+      }
       let sessionFilePath = path.resolve(this.options.sessionDirectory,
         sessionPath);
       if (sessionExpired) {
@@ -53,6 +56,9 @@ class FileStore extends EventEmitter {
       }
       return readFile(sessionFilePath, "utf8");
     }).then(content => {
+      if (!content) {
+        return null;
+      }
       try {
         return JSON.parse(content);
       } catch (err) {
