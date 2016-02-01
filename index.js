@@ -2,6 +2,7 @@
 
 let path = require("path");
 let fs = require("fs");
+let mkdirp = promisify(require("mkdirp"));
 let EventEmitter = require("events");
 
 let promisify = require("es6-promisify");
@@ -72,7 +73,9 @@ class FileStore extends EventEmitter {
   set(sid, session, ttl) {
     let sessionFilePath = path.resolve(this.options.sessionDirectory,
       `${sid}__${ttl}.json`);
-    return writeFile(sessionFilePath, JSON.stringify(session));
+    return mkdirp(this.options.sessionDirectory).then(() => {
+      return writeFile(sessionFilePath, JSON.stringify(session));  
+    });
   }
 
   destroy(sid) {
